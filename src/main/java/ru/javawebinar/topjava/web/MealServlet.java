@@ -3,7 +3,8 @@ package ru.javawebinar.topjava.web;
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
-import ru.javawebinar.topjava.repository.CrudRepositoryMeals;
+import ru.javawebinar.topjava.repository.MealCrudRepository;
+import ru.javawebinar.topjava.repository.MemoryMealCrudRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.util.TimeUtil;
 
@@ -20,12 +21,12 @@ import java.util.List;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
-    private CrudRepositoryMeals repository;
     private static final Logger log = getLogger(MealServlet.class);
+    private MealCrudRepository repository;
 
     @Override
     public void init() {
-        repository = new CrudRepositoryMeals();
+        repository = new MemoryMealCrudRepository();
     }
 
     @Override
@@ -49,6 +50,7 @@ public class MealServlet extends HttpServlet {
         switch (action) {
             case "create":
             case "update":
+                log.info("Create/Update");
                 Meal meal = action.equals("create") ?
                         new Meal(null, LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 100) :
                         repository.get(Integer.parseInt(req.getParameter("id")));
@@ -63,7 +65,7 @@ public class MealServlet extends HttpServlet {
                 break;
             default:
                 log.info("Meals list");
-                List<MealTo> mealToList = MealsUtil.filteredByStreams(repository.findAll(), LocalTime.MIN,
+                List<MealTo> mealToList = MealsUtil.filteredByStreams((List<Meal>) repository.findAll(), LocalTime.MIN,
                         LocalTime.MAX, MealsUtil.CALORIES_PER_DAY);
                 req.setAttribute("mealToList", mealToList);
                 req.getRequestDispatcher("/meals.jsp").forward(req, resp);

@@ -5,6 +5,15 @@
 <head>
     <title>Meals</title>
 </head>
+<style>
+    .ok {
+        color: green;
+    }
+
+    .excess {
+        color: red;
+    }
+</style>
 <body>
 <h3><a href="index.html">Home</a></h3>
 <hr/>
@@ -22,7 +31,7 @@
     </thead>
     <c:forEach var="meal" items="${mealToList}">
         <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.MealTo"/>
-        <tr style="${meal.excess ? 'color:red' : 'color:green'}">
+        <tr class="${meal.excess ? 'excess' : 'ok'}">
             <td><%=TimeUtil.formatDateTime(meal.getDateTime())%>
             </td>
             <td>${meal.description}</td>

@@ -14,7 +14,7 @@
     <input type="hidden" name="id" value="${meal.id}">
     <dl>
         <dt>DateTime:</dt>
-        <dd><input type="datetime-local" value="<%=TimeUtil.formatDateTime(meal.getDateTime())%>" name="dateTime"
+        <dd><input type="datetime-local" value="${meal.getDateTime()}" name="dateTime"
                    required></dd>
     </dl>
     <dl>

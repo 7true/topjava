@@ -7,11 +7,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CrudRepositoryMeals implements CrudRepository {
-    private Map<Integer, Meal> storage = new ConcurrentHashMap<>();
-    private AtomicInteger id = new AtomicInteger(0);
+public class MemoryMealCrudRepository implements MealCrudRepository {
+    private final Map<Integer, Meal> storage = new ConcurrentHashMap<>();
+    private final AtomicInteger id = new AtomicInteger(0);
 
-    public CrudRepositoryMeals() {
+    public MemoryMealCrudRepository() {
         MealsUtil.meals.forEach(this::save);
     }
 
