@@ -3,8 +3,10 @@ package ru.javawebinar.topjava.repository.inmemory;
 import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
+import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -18,13 +20,14 @@ public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.meals.forEach(meal -> save(meal, 0));
+        MealsUtil.meals.forEach(meal -> save(meal, meal.getUserId()));
     }
 
     @Override
     public Meal save(Meal meal, int userId) {
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
+            meal.setUserId(userId);
             repository.put(meal.getId(), meal);
             return meal;
         }
@@ -34,22 +37,37 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public boolean delete(int id, int userId) {
-        for (Map.Entry<Integer, Meal> entry : repository.entrySet()) {
-            if (entry.getValue().getUserId() == userId && entry.getKey() == id) {
-                repository.remove(id);
-                return true;
-            }
+        Meal meal = repository.get(id);
+        if (meal == null) {
+            return false;
         }
-        return false;
+        int mealUserId = meal.getUserId();
+        return mealUserId == userId && repository.remove(id) != null;
     }
 
     @Override
     public Meal get(int id, int userId) {
-        return repository.get(id).getUserId() == userId ? repository.get(id) : null;
+        Meal meal = repository.get(id);
+        if (meal == null) {
+            return null;
+        }
+        int mealUserId = meal.getUserId();
+        return mealUserId == userId ? meal : null;
     }
 
     @Override
     public List<Meal> getAll(int userId) {
+        return getDateReversed(userId);
+    }
+
+    @Override
+    public List<Meal> getFilteredByDate(LocalDateTime startDate, LocalDateTime endDate, int userId) {
+        return getDateReversed(userId).stream()
+                .filter(m -> DateTimeUtil.isBetweenInclusive(m.getDateTime(), startDate, endDate))
+                .collect(Collectors.toList());
+    }
+
+    private List<Meal> getDateReversed(int userId) {
         return repository.values().stream()
                 .filter(m -> m.getUserId() == userId)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())

@@ -6,9 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+
+import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
 public class MealRestController {
@@ -20,10 +27,11 @@ public class MealRestController {
         this.service = service;
     }
 
-    public List<Meal> getAll() {
+    public List<MealTo> getAll() {
         int userId = SecurityUtil.authUserId();
         log.info("getAll userId {}", userId);
-        return service.getAll(userId);
+        //return service.getAll(userId);
+        return MealsUtil.getTos(service.getAll(userId), MealsUtil.DEFAULT_CALORIES_PER_DAY);
     }
 
     public Meal get(int id) {
@@ -35,6 +43,7 @@ public class MealRestController {
     public Meal create(Meal meal) {
         int userId = SecurityUtil.authUserId();
         log.info("create meal {} userId {}", meal.getId(), userId);
+        checkNew(meal);
         return service.create(meal, userId);
     }
 
@@ -47,6 +56,13 @@ public class MealRestController {
     public void update(Meal meal, int id) {
         int userId = SecurityUtil.authUserId();
         log.info("update meal {} userId {}", id, userId);
-        service.update(meal, id);
+        assureIdConsistent(meal, id);
+        service.update(meal, userId);
+    }
+
+    public List<MealTo> getFilteredByDateTime(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+        int userId = SecurityUtil.authUserId();
+        List<Meal> mealsFilteredByDate = service.getFilteredByDate(startDate, endDate, userId);
+        return MealsUtil.getFilteredTos(mealsFilteredByDate, SecurityUtil.authUserCaloriesPerDay(), startTime, endTime);
     }
 }

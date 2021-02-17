@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
@@ -36,4 +39,11 @@ public class MealService {
     public void delete(int id, int userId) {
         checkNotFoundWithId(repository.delete(id, userId), id);
     }
+
+    public List<Meal> getFilteredByDate(LocalDate startDate, LocalDate endDate, int userId) {
+        LocalDateTime start = LocalDateTime.of(startDate != null ? startDate : LocalDate.MIN, LocalTime.MIN);
+        LocalDateTime end = LocalDateTime.of(endDate != null ? endDate : LocalDate.MAX, LocalTime.MAX);
+        return repository.getFilteredByDate(start, end, userId);
+    }
+
 }
