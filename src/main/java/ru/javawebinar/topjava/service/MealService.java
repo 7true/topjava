@@ -41,8 +41,8 @@ public class MealService {
     }
 
     public List<Meal> getFilteredByDate(LocalDate startDate, LocalDate endDate, int userId) {
-        LocalDateTime start = LocalDateTime.of(startDate != null ? startDate : LocalDate.MIN, LocalTime.MIN);
-        LocalDateTime end = LocalDateTime.of(endDate != null ? endDate : LocalDate.MAX, LocalTime.MAX);
+        LocalDateTime start = LocalDateTime.of(startDate, LocalTime.MIN);
+        LocalDateTime end = LocalDateTime.of(endDate, LocalTime.MAX);
         return repository.getFilteredByDate(start, end, userId);
     }
 

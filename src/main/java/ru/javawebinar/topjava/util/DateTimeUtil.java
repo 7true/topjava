@@ -11,7 +11,7 @@ public class DateTimeUtil {
         return lt.compareTo(startTime) >= 0 && lt.compareTo(endTime) < 0;
     }
 
-    public static boolean isBetweenInclusive(LocalDateTime value, LocalDateTime start, LocalDateTime end) {
+    public static boolean isBetweenDate(LocalDateTime value, LocalDateTime start, LocalDateTime end) {
         return value.compareTo(start) >= 0 && value.compareTo(end) <= 0;
     }
 

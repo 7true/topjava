@@ -32,7 +32,12 @@ public class InMemoryMealRepository implements MealRepository {
             return meal;
         }
         // handle case: update, but not present in storage
-        return meal.getUserId() == userId ? repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal) : null;
+        Integer userIdFromRepo = null;
+        Meal mealFromRepo = repository.get(meal.getId());
+        if (mealFromRepo != null) {
+            userIdFromRepo = mealFromRepo.getUserId();
+        }
+        return userIdFromRepo == userId ? repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal) : null;
     }
 
     @Override
@@ -57,19 +62,18 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        return getDateReversed(userId);
+        return getFilteredDateReversed(userId, LocalDateTime.MIN, LocalDateTime.MAX);
     }
 
     @Override
     public List<Meal> getFilteredByDate(LocalDateTime startDate, LocalDateTime endDate, int userId) {
-        return getDateReversed(userId).stream()
-                .filter(m -> DateTimeUtil.isBetweenInclusive(m.getDateTime(), startDate, endDate))
-                .collect(Collectors.toList());
+        return getFilteredDateReversed(userId, startDate, endDate);
     }
 
-    private List<Meal> getDateReversed(int userId) {
+    private List<Meal> getFilteredDateReversed(int userId, LocalDateTime startDate, LocalDateTime endDate) {
         return repository.values().stream()
                 .filter(m -> m.getUserId() == userId)
+                .filter(m -> DateTimeUtil.isBetweenDate(m.getDateTime(), startDate, endDate))
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }
