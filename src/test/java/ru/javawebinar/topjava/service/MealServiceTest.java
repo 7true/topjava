@@ -1,7 +1,12 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -15,6 +20,7 @@ import java.time.LocalDate;
 import java.time.Month;
 
 import static org.junit.Assert.assertThrows;
+import static org.slf4j.LoggerFactory.getLogger;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
@@ -26,9 +32,33 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
-
+    private static final Logger logger = getLogger(MealServiceTest.class);
+    private static String result = "";
     @Autowired
     private MealService service;
+
+    @Rule
+    public TestWatcher watcher = new TestWatcher() {
+        long start;
+        long end;
+
+        @Override
+        protected void starting(Description description) {
+            start = System.currentTimeMillis();
+        }
+
+        @Override
+        protected void finished(Description description) {
+            end = System.currentTimeMillis();
+            logger.info("DEBUG: Method '" + description.getMethodName() + "' exec time is " + (end - start) + " milliseconds");
+            result += "'" + description.getMethodName() + "' - " + (end - start) + " milliseconds\n";
+        }
+    };
+
+    @AfterClass
+    public static void printStatistics() {
+        logger.info(result);
+    }
 
     @Test
     public void delete() {
@@ -61,7 +91,6 @@ public class MealServiceTest {
         assertThrows(DataAccessException.class, () ->
                 service.create(new Meal(null, meal1.getDateTime(), "duplicate", 100), USER_ID));
     }
-
 
     @Test
     public void get() {
