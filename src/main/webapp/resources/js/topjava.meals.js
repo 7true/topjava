@@ -1,10 +1,13 @@
 const mealAjaxUrl = "profile/meals/";
 
-// https://stackoverflow.com/a/5064235/548473
 const ctx = {
     ajaxUrl: mealAjaxUrl,
     updateTable: function () {
-        $.get(mealAjaxUrl, updateTableByData);
+        $.ajax({
+            type: "GET",
+            url: mealAjaxUrl + "filter",
+            data: $("#filter").serialize()
+        }).done(updateTableByData);
     }
 }
 
@@ -25,8 +28,11 @@ $(function () {
             "columns": [
                 {
                     "data": "dateTime",
-                    "render": function (date) {
-                            return date.replace('T', ' ');
+                    "render": function (data, type) {
+                        if (type === 'display') {
+                            return data.replace('T', ' ').substring(0, 16);
+                        }
+                        return data;
                     }
                 },
                 {
